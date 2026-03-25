@@ -348,15 +348,34 @@ function updateHint() {
 // ── Bulk import ────────────────────────────────────────────────
 function toggleBulk() { document.getElementById('bulkArea').classList.toggle('show'); }
 function importBulk() {
-  const lines = document.getElementById('bulkText').value.split('\n').filter(l => l.trim());
+  const raw = document.getElementById('bulkText').value;
+  const lines = raw.split('\n').filter(l => l.trim());
   let added = 0;
+
   for (const line of lines) {
-    const p = line.split(',').map(s => s.trim());
-    if (p.length >= 2) { addRow(p[0], p.slice(1,p.length-1).join(', '), p[p.length-1]); added++; }
+    // Auto-detect separator: tab (from Google Sheets copy) or comma
+    const sep = line.includes('\t') ? '\t' : ',';
+    const p = line.split(sep).map(s => s.trim().replace(/^"|"$/g, ''));
+
+    // Skip header row if present
+    if (p[0].toLowerCase() === 'url' || p[0].toLowerCase() === 'link') continue;
+
+    if (p.length >= 3) {
+      // 3+ columns: URL, Title, Keyword
+      addRow(p[0], p[1], p[2]); added++;
+    } else if (p.length === 2) {
+      // 2 columns: URL, Keyword (no title)
+      addRow(p[0], '', p[1]); added++;
+    }
   }
+
   document.getElementById('bulkText').value = '';
   toggleBulk();
-  log(`Imported ${added} row${added>1?'s':''}`, 'ok');
+  if (added > 0) {
+    log(`Imported ${added} row${added>1?'s':''}`, 'ok');
+  } else {
+    log('No rows imported — make sure your data has at least 2 columns (URL + Keyword)', 'err');
+  }
 }
 
 // ── Log ────────────────────────────────────────────────────────
