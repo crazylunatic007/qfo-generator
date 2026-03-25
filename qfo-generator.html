@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QFO Generator — screenbinge.ca</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #08090d;
+  --surface: #0f1117;
+  --surface2: #161820;
+  --surface3: #1e2029;
+  --border: #252733;
+  --border2: #2e3140;
+  --accent: #4f8eff;
+  --accent-glow: rgba(79,142,255,0.15);
+  --green: #3ecf8e;
+  --green-glow: rgba(62,207,142,0.12);
+  --red: #f56565;
+  --amber: #f6c90e;
+  --purple: #a78bfa;
+  --text: #e2e4ef;
+  --text2: #9196b0;
+  --text3: #5c6080;
+  --font: 'Space Grotesk', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; line-height: 1.6; }
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.main { flex: 1; padding: 32px 40px 80px; min-width: 0; }
+.brand { padding: 8px 8px 16px; border-bottom: 1px solid var(--border); }
+.brand-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+.brand-sub { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+.nav-section { display: flex; flex-direction: column; gap: 4px; }
+.nav-label { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1.2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.sidebar-info { padding: 12px; background: var(--surface2); border-radius: 10px; border: 1px solid var(--border); font-size: 11px; color: var(--text3); line-height: 1.7; }
+.sidebar-stats { margin-top: auto; padding: 12px; background: var(--surface2); border-radius: 10px; border: 1px solid var(--border); }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.stat-label { font-size: 11px; color: var(--text3); }
+.stat-val { font-size: 12px; font-weight: 600; font-family: var(--mono); color: var(--text); }
+.stat-val.green { color: var(--green); }
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+.page-desc { font-size: 13px; color: var(--text2); margin-top: 6px; max-width: 620px; line-height: 1.7; }
+.badge-patent { display: inline-flex; align-items: center; gap: 6px; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25); color: var(--purple); padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; margin-top: 10px; letter-spacing: 0.3px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 13px; font-weight: 600; }
+.card-body { padding: 20px; }
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-full { grid-column: 1 / -1; }
+.field label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; }
+.field input, .field select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.15s; }
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--text3); }
+.field-hint { font-size: 11px; color: var(--text3); line-height: 1.5; }
+.auth-strip { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border2); margin-top: 16px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-idle { background: var(--text3); }
+.dot-ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.dot-err { background: var(--red); }
+.auth-text { font-size: 12px; flex: 1; color: var(--text2); }
+.btn-xs { padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; font-family: var(--font); border: 1px solid var(--border2); background: var(--surface3); color: var(--text2); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.btn-xs:hover { border-color: var(--accent); color: var(--accent); }
+.input-table { width: 100%; border-collapse: collapse; }
+.input-table thead th { text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.input-table tbody tr { border-bottom: 1px solid rgba(37,39,51,0.7); }
+.input-table tbody tr:hover { background: rgba(255,255,255,0.01); }
+.input-table td { padding: 5px 4px; }
+.input-table td:first-child { padding-left: 10px; }
+.cell-num { font-family: var(--mono); font-size: 11px; color: var(--text3); width: 30px; }
+.cinput { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text); padding: 7px 9px; border-radius: 6px; font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.15s; }
+.cinput:focus { border-color: var(--border2); background: var(--surface2); }
+.cinput::placeholder { color: var(--text3); }
+.td-st { width: 32px; text-align: center; }
+.td-del { width: 32px; text-align: center; }
+.del-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 15px; padding: 3px 7px; border-radius: 5px; transition: all 0.12s; line-height: 1; }
+.del-btn:hover { color: var(--red); background: rgba(245,101,101,0.08); }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; padding: 11px 24px; border-radius: 9px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; box-shadow: 0 2px 12px rgba(79,142,255,0.25); }
+.btn-primary:hover { background: #6ba3ff; }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-secondary { display: inline-flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); padding: 9px 16px; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px dashed var(--border2); color: var(--text3); padding: 8px 14px; border-radius: 8px; font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.run-row { display: flex; align-items: center; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+.run-hint { font-size: 12px; color: var(--text3); }
+.progress-track { height: 3px; background: var(--surface3); border-radius: 2px; margin-top: 14px; display: none; }
+.progress-track.show { display: block; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 2px; transition: width 0.3s ease; width: 0%; }
+.bulk-area { display: none; margin-bottom: 16px; }
+.bulk-area.show { display: block; }
+.bulk-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 12px 14px; border-radius: 8px; font-family: var(--mono); font-size: 12px; min-height: 110px; outline: none; resize: vertical; line-height: 1.8; }
+.bulk-textarea:focus { border-color: var(--accent); }
+.bulk-actions { display: flex; gap: 8px; margin-top: 10px; }
+.log-wrap { display: none; margin-top: 20px; }
+.log-wrap.show { display: block; }
+.log-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 11px; max-height: 140px; overflow-y: auto; line-height: 2; }
+.log-row { display: flex; gap: 12px; }
+.log-time { color: var(--text3); flex-shrink: 0; }
+.log-ok { color: var(--green); }
+.log-err { color: var(--red); }
+.log-info { color: var(--accent); }
+.log-warn { color: var(--amber); }
+.results-section { margin-top: 40px; }
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.results-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; animation: rise 0.25s ease; }
+@keyframes rise { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.result-header { padding: 16px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); }
+.result-meta h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+.result-url { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.result-kw { display: inline-flex; align-items: center; gap: 5px; background: rgba(79,142,255,0.1); border: 1px solid rgba(79,142,255,0.2); color: var(--accent); padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+.sheet-tag { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.tag-ok { background: var(--green-glow); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+.tag-fail { background: rgba(245,101,101,0.08); color: var(--red); border: 1px solid rgba(245,101,101,0.2); }
+.tag-pending { background: rgba(246,201,14,0.08); color: var(--amber); border: 1px solid rgba(246,201,14,0.2); }
+.theme-group { border-bottom: 1px solid var(--border); }
+.theme-group:last-child { border-bottom: none; }
+.theme-header { display: flex; align-items: center; gap: 10px; padding: 11px 20px; background: rgba(0,0,0,0.15); cursor: pointer; user-select: none; }
+.theme-icon { font-size: 13px; width: 20px; }
+.theme-name { font-size: 12px; font-weight: 700; color: var(--text2); letter-spacing: 0.3px; flex: 1; }
+.theme-count { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.theme-chevron { font-size: 11px; color: var(--text3); transition: transform 0.2s; }
+.theme-chevron.open { transform: rotate(180deg); }
+.theme-queries { display: none; }
+.theme-queries.open { display: block; }
+.query-row { display: grid; grid-template-columns: 24px 1fr 130px; align-items: start; padding: 9px 20px; border-top: 1px solid rgba(37,39,51,0.5); transition: background 0.1s; }
+.query-row:hover { background: rgba(255,255,255,0.015); }
+.qnum { font-family: var(--mono); font-size: 10px; color: var(--text3); padding-top: 1px; }
+.qtext { font-size: 13px; line-height: 1.5; }
+.qintent { text-align: right; }
+.intent { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+.i-informational { background: rgba(79,142,255,0.12); color: #6aaeff; border: 1px solid rgba(79,142,255,0.2); }
+.i-navigational   { background: rgba(246,201,14,0.1);  color: #f6c90e; border: 1px solid rgba(246,201,14,0.2); }
+.i-commercial     { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+.i-transactional  { background: var(--green-glow);     color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+.spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: sp 0.6s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 36px 20px; color: var(--text3); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-name">🎬 QFO Generator</div>
+      <div class="brand-sub">screenbinge.ca</div>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">Workflow</div>
+      <button class="nav-item" onclick="scrollTo('#config')"><span class="nav-icon">⚙</span> Configuration</button>
+      <button class="nav-item" onclick="scrollTo('#posts')"><span class="nav-icon">📝</span> Blog Posts</button>
+      <button class="nav-item" onclick="scrollTo('#results')"><span class="nav-icon">📊</span> Results</button>
+    </nav>
+    <nav class="nav-section">
+      <div class="nav-label">How It Works</div>
+      <div class="sidebar-info">
+        Based on Google's <strong style="color:var(--text2)">Thematic Search patent</strong> (US12158907B1). Queries span 8 semantic facets — the same thematic clusters Google's AI Mode uses internally to fan-out a query before synthesizing an answer.
+      </div>
+    </nav>
+    <div class="sidebar-stats">
+      <div class="nav-label" style="margin-bottom:8px">Session</div>
+      <div class="stat-row"><span class="stat-label">Posts queued</span><span class="stat-val" id="s-posts">0</span></div>
+      <div class="stat-row"><span class="stat-label">QFOs generated</span><span class="stat-val green" id="s-qfos">0</span></div>
+      <div class="stat-row"><span class="stat-label">Pushed to Sheets</span><span class="stat-val green" id="s-pushed">0</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title">Query Fan-Out Generator</div>
+      <div class="page-desc">Generates thematically structured QFO sub-queries for each blog post — organized across 8 semantic facets that mirror how Google's AI Mode decomposes a query internally before retrieving and synthesizing results.</div>
+      <div class="badge-patent">📄 Modeled on Google Thematic Search Patent US12158907B1</div>
+    </div>
+
+    <!-- Config -->
+    <div class="card" id="config">
+      <div class="card-header"><span class="card-title">⚙ Configuration</span></div>
+      <div class="card-body">
+        <div class="config-grid">
+          <div class="field">
+            <label>Google Sheet ID</label>
+            <input type="text" id="sheetId" placeholder="Paste Sheet ID from URL…"/>
+            <div class="field-hint">docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit</div>
+          </div>
+          <div class="field">
+            <label>Sheet Tab Name</label>
+            <input type="text" id="sheetTab" value="QFO Data"/>
+          </div>
+          <div class="field">
+            <label>Site / Niche Context</label>
+            <input type="text" id="siteCtx" value="screenbinge.ca — streaming reviews, show recommendations, movie guides"/>
+          </div>
+          <div class="field">
+            <label>Queries per Theme</label>
+            <select id="perTheme" onchange="updateHint()">
+              <option value="1">1 per theme (8 total)</option>
+              <option value="2" selected>2 per theme (16 total)</option>
+              <option value="3">3 per theme (24 total)</option>
+            </select>
+          </div>
+        </div>
+        <div class="auth-strip">
+          <div class="dot dot-idle" id="authDot"></div>
+          <span class="auth-text" id="authText">Not connected to Google Sheets</span>
+          <button class="btn-xs" id="authBtn" onclick="handleAuth()">Connect Google</button>
+        </div>
+        <div class="field-hint" style="margin-top:10px">
+          <strong>Sheets columns written:</strong> URL · Title · Keyword · Theme · QFO Query · Intent · Timestamp &nbsp;|&nbsp;
+          <strong>OAuth setup:</strong> console.cloud.google.com → APIs & Credentials → OAuth 2.0 Client ID → enable Sheets API → add this page as authorized origin.
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="card" id="posts">
+      <div class="card-header">
+        <span class="card-title">📝 Blog Posts</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn-ghost" onclick="toggleBulk()">⬆ Bulk Import</button>
+          <button class="btn-secondary" onclick="addRow()">＋ Add Row</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="bulk-area" id="bulkArea">
+          <textarea class="bulk-textarea" id="bulkText" placeholder="Paste CSV: URL, Title, Keyword — one post per line
+https://screenbinge.ca/best-horror-netflix, Best Horror Movies on Netflix, best horror movies on netflix
+https://screenbinge.ca/top-sci-fi-shows, Top Sci-Fi Shows to Watch, best sci-fi shows streaming"></textarea>
+          <div class="bulk-actions">
+            <button class="btn-secondary" onclick="importBulk()">Import</button>
+            <button class="btn-ghost" onclick="toggleBulk()">Cancel</button>
+          </div>
+        </div>
+
+        <table class="input-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>URL</th>
+              <th>Title</th>
+              <th style="width:200px">Target Keyword</th>
+              <th style="width:30px"></th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="run-row">
+          <button class="btn-primary" id="runBtn" onclick="runAll()"><span>Generate QFOs</span></button>
+          <span class="run-hint" id="runHint">Add posts above to begin.</span>
+        </div>
+        <div class="progress-track" id="prog"><div class="progress-fill" id="progFill"></div></div>
+        <div class="log-wrap" id="logWrap"><div class="log-box" id="logBox"></div></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="results" style="display:none">
+      <div class="results-header">
+        <div class="results-title">Results</div>
+        <button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+      <div id="resultCards"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let rows = [], rowId = 0, allResults = [];
+let accessToken = null, tokenClient = null;
+let totalQfos = 0, totalPushed = 0;
+
+const THEME_META = {
+  WHAT_IS:   { icon: '❓', label: 'What It Is' },
+  HOW_TO:    { icon: '⚙️', label: 'How To / Process' },
+  WHY:       { icon: '💡', label: 'Why / Reasoning' },
+  BEST_LIST: { icon: '⭐', label: 'Best / Top Lists' },
+  COMPARE:   { icon: '⚖️', label: 'Compare / Vs' },
+  PROBLEMS:  { icon: '⚠️', label: 'Problems / Issues' },
+  WHO_FOR:   { icon: '👤', label: 'Who It\'s For' },
+  CONTEXT:   { icon: '🌍', label: 'Context / Situation' },
+};
+
+// ── Rows ───────────────────────────────────────────────────────
+function addRow(url='', title='', kw='') {
+  const id = ++rowId;
+  rows.push({ id, url, title, kw, status: 'idle' });
+  renderTable(); updateStats(); updateHint();
+}
+function deleteRow(id) {
+  rows = rows.filter(r => r.id !== id);
+  renderTable(); updateStats(); updateHint();
+}
+function syncRows() {
+  rows.forEach(r => {
+    const tr = document.getElementById('r' + r.id); if (!tr) return;
+    r.url   = tr.querySelector('.u').value.trim();
+    r.title = tr.querySelector('.t').value.trim();
+    r.kw    = tr.querySelector('.k').value.trim();
+  });
+}
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty">No posts yet — add rows or use Bulk Import.</div></td></tr>`; return; }
+  tbody.innerHTML = rows.map((r,i) => `
+    <tr id="r${r.id}">
+      <td class="cell-num">${i+1}</td>
+      <td><input class="cinput u" placeholder="https://screenbinge.ca/…" value="${x(r.url)}"/></td>
+      <td><input class="cinput t" placeholder="Post title…" value="${x(r.title)}"/></td>
+      <td><input class="cinput k" placeholder="target keyword" value="${x(r.kw)}"/></td>
+      <td class="td-st" id="st${r.id}">${si(r.status)}</td>
+      <td class="td-del"><button class="del-btn" onclick="deleteRow(${r.id})">×</button></td>
+    </tr>`).join('');
+}
+function si(s) {
+  if (s==='idle')    return `<span style="color:var(--text3);font-size:11px">○</span>`;
+  if (s==='running') return `<div class="spin"></div>`;
+  if (s==='done')    return `<span style="color:var(--green)">✓</span>`;
+  if (s==='error')   return `<span style="color:var(--red)">✗</span>`;
+  return '';
+}
+function setStatus(id, s) {
+  const r = rows.find(r => r.id===id); if (r) r.status = s;
+  const el = document.getElementById('st'+id); if (el) el.innerHTML = si(s);
+}
+function x(s) { return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function updateStats() {
+  document.getElementById('s-posts').textContent  = rows.length;
+  document.getElementById('s-qfos').textContent   = totalQfos;
+  document.getElementById('s-pushed').textContent = totalPushed;
+}
+function updateHint() {
+  const n = rows.filter(r => r.kw).length;
+  const est = n * parseInt(document.getElementById('perTheme').value) * 8;
+  document.getElementById('runHint').textContent = n===0 ? 'Add posts above to begin.' : `${n} post${n>1?'s':''} ready — ~${est} queries estimated across 8 themes each.`;
+}
+
+// ── Bulk import ────────────────────────────────────────────────
+function toggleBulk() { document.getElementById('bulkArea').classList.toggle('show'); }
+function importBulk() {
+  const lines = document.getElementById('bulkText').value.split('\n').filter(l => l.trim());
+  let added = 0;
+  for (const line of lines) {
+    const p = line.split(',').map(s => s.trim());
+    if (p.length >= 2) { addRow(p[0], p.slice(1,p.length-1).join(', '), p[p.length-1]); added++; }
+  }
+  document.getElementById('bulkText').value = '';
+  toggleBulk();
+  log(`Imported ${added} row${added>1?'s':''}`, 'ok');
+}
+
+// ── Log ────────────────────────────────────────────────────────
+function log(msg, type='info') {
+  document.getElementById('logWrap').classList.add('show');
+  const box = document.getElementById('logBox');
+  const div = document.createElement('div');
+  div.className = 'log-row';
+  div.innerHTML = `<span class="log-time">${new Date().toLocaleTimeString()}</span><span class="log-${type}">${msg}</span>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ── Run ────────────────────────────────────────────────────────
+async function runAll() {
+  syncRows();
+  const valid = rows.filter(r => r.kw);
+  if (!valid.length) { alert('Add at least one row with a keyword.'); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.innerHTML = `<div class="spin"></div><span>Processing…</span>`;
+  document.getElementById('prog').classList.add('show');
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('resultCards').innerHTML = '';
+  allResults = [];
+
+  for (let i = 0; i < valid.length; i++) {
+    const row = valid[i];
+    setStatus(row.id, 'running');
+    log(`Processing "${row.kw}"…`, 'info');
+    try {
+      const themed = await generateThematic(row);
+      allResults.push({ row, themed });
+      document.getElementById('resultCards').appendChild(renderResultCard(row, themed));
+      setStatus(row.id, 'done');
+
+      const count = themed.reduce((a,t) => a + t.queries.length, 0);
+      totalQfos += count; updateStats();
+      log(`✓ "${row.kw}" — ${count} queries across ${themed.length} themes`, 'ok');
+
+      if (accessToken) {
+        const sid = document.getElementById('sheetId').value.trim();
+        const tab = document.getElementById('sheetTab').value.trim() || 'QFO Data';
+        if (sid) {
+          try {
+            await pushToSheets(sid, tab, row, themed);
+            setBadge(row.id, 'ok'); totalPushed += count; updateStats();
+            log(`→ Pushed to Sheets`, 'ok');
+          } catch(e) { setBadge(row.id, 'fail'); log(`✗ Sheets: ${e.message}`, 'err'); }
+        }
+      } else { setBadge(row.id, 'pending'); }
+
+    } catch(e) { setStatus(row.id, 'error'); log(`✗ ${e.message}`, 'err'); }
+    document.getElementById('progFill').style.width = (((i+1)/valid.length)*100) + '%';
+  }
+
+  btn.disabled = false; btn.innerHTML = `<span>Generate QFOs</span>`;
+  log(`Done.`, 'ok');
+}
+
+// ── Claude API — Thematic QFO ─────────────────────────────────
+async function generateThematic(row) {
+  const n   = parseInt(document.getElementById('perTheme').value);
+  const ctx = document.getElementById('siteCtx').value.trim();
+
+  const system = `You are an expert SEO strategist specialising in Google AI Overviews and AI Mode optimization.
+
+You generate Query Fan-Out (QFO) sub-queries using Google's Thematic Search methodology (patent US12158907B1). This patent reveals that Google clusters content from top-ranking documents into semantic themes, then generates sub-queries for each theme — these are the parallel queries that AI Mode dispatches internally before synthesising an answer.
+
+Your output must be:
+- REAL queries a person would actually type into Google — not keyword paraphrases
+- SPECIFIC to the given topic — no generic SEO filler
+- VARIED in length: mix short (3–5 words) and long-tail (7–12 words)
+- DISTINCT from each other — no near-duplicates
+- Grounded in genuine user psychology: curiosity, comparison, problem-solving, discovery, decision-making
+
+For streaming/entertainment content specifically, consider: platform availability, genre mood, "worth watching" decisions, comparisons with similar titles, who the show/film is for, binge-ability, hidden gems angle, and season-specific queries.
+
+Respond ONLY with valid JSON — no markdown, no explanation.`;
+
+  const user = `Site: ${ctx}
+URL: ${row.url}
+Title: ${row.title || '(not provided)'}
+Keyword: ${row.kw}
+
+Generate exactly ${n} genuine QFO sub-quer${n>1?'ies':'y'} for each of the following 8 thematic facets. These facets reflect how Google's AI Mode fans out a query across distinct semantic dimensions before synthesising a response:
+
+WHAT_IS   — Definitional queries: what is it, what makes it good/bad, what to expect
+HOW_TO    — Procedural queries: how to watch, find, access, get started, get the most from it
+WHY       — Reasoning queries: why watch it, why it's popular/overrated, why it matters
+BEST_LIST — Ranking/recommendation queries: best of, top picks, must-watch, hidden gems
+COMPARE   — Comparison queries: vs alternatives, similar options, differences, is X better than Y
+PROBLEMS  — Pain-point queries: is it worth it, disappointing, overhyped, issues, drawbacks
+WHO_FOR   — Audience queries: who should watch, who it appeals to, age group, taste-based
+CONTEXT   — Situational queries: where to stream, free vs paid, when to watch, binge or weekly
+
+For each query also classify the search intent as one of: Informational, Navigational, Commercial, or Transactional.
+
+Respond ONLY with this exact JSON (8 objects, one per theme):
+[
+  { "theme": "WHAT_IS",   "queries": [ { "query": "...", "intent": "Informational" } ] },
+  { "theme": "HOW_TO",    "queries": [ { "query": "...", "intent": "Informational" } ] },
+  { "theme": "WHY",       "queries": [ { "query": "...", "intent": "Informational" } ] },
+  { "theme": "BEST_LIST", "queries": [ { "query": "...", "intent": "Commercial" }    ] },
+  { "theme": "COMPARE",   "queries": [ { "query": "...", "intent": "Commercial" }    ] },
+  { "theme": "PROBLEMS",  "queries": [ { "query": "...", "intent": "Informational" } ] },
+  { "theme": "WHO_FOR",   "queries": [ { "query": "...", "intent": "Informational" } ] },
+  { "theme": "CONTEXT",   "queries": [ { "query": "...", "intent": "Navigational" }  ] }
+]`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system,
+      messages: [{ role: 'user', content: user }]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(()=>({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const raw  = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+  return JSON.parse(raw);
+}
+
+// ── Render result card ─────────────────────────────────────────
+function renderResultCard(row, themed) {
+  const div = document.createElement('div');
+  div.className = 'result-card';
+  div.id = 'card-' + row.id;
+  const total = themed.reduce((a,t) => a + t.queries.length, 0);
+
+  const themeHtml = themed.map(t => {
+    const meta = THEME_META[t.theme] || { icon: '📌', label: t.theme };
+    const qHtml = t.queries.map((q,i) => `
+      <div class="query-row">
+        <span class="qnum">${i+1}</span>
+        <span class="qtext">${x(q.query)}</span>
+        <span class="qintent"><span class="intent i-${(q.intent||'').toLowerCase()}">${q.intent||'—'}</span></span>
+      </div>`).join('');
+    return `
+      <div class="theme-group">
+        <div class="theme-header" onclick="toggleTheme(this)">
+          <span class="theme-icon">${meta.icon}</span>
+          <span class="theme-name">${meta.label}</span>
+          <span class="theme-count">${t.queries.length} quer${t.queries.length>1?'ies':'y'}</span>
+          <span class="theme-chevron open">▾</span>
+        </div>
+        <div class="theme-queries open">${qHtml}</div>
+      </div>`;
+  }).join('');
+
+  div.innerHTML = `
+    <div class="result-header">
+      <div class="result-meta">
+        <h3>${x(row.title || row.url)}</h3>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="result-kw">🔑 ${x(row.kw)}</span>
+          <span class="result-url">${x(row.url)}</span>
+        </div>
+        <div style="margin-top:4px;font-size:11px;color:var(--text3)">${total} queries · 8 thematic facets</div>
+      </div>
+      <div class="sheet-tag tag-pending" id="badge-${row.id}">⏳ Pending</div>
+    </div>
+    ${themeHtml}`;
+  return div;
+}
+
+function toggleTheme(h) {
+  h.nextElementSibling.classList.toggle('open');
+  h.querySelector('.theme-chevron').classList.toggle('open');
+}
+function setBadge(rowId, state) {
+  const el = document.getElementById('badge-' + rowId); if (!el) return;
+  if (state==='ok')   { el.className='sheet-tag tag-ok';   el.textContent='✓ In Sheets'; }
+  else if (state==='fail') { el.className='sheet-tag tag-fail'; el.textContent='✗ Push failed'; }
+  else                { el.className='sheet-tag tag-pending'; el.textContent='⚠ Not pushed'; }
+}
+
+// ── Sheets ─────────────────────────────────────────────────────
+async function ensureHeader(sid, tab) {
+  const r = encodeURIComponent(`${tab}!A1:G1`);
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values/${r}`, { headers: { Authorization: `Bearer ${accessToken}` }});
+  const d = await res.json();
+  if (!d.values?.[0] || d.values[0][0] !== 'URL') {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values/${r}?valueInputOption=RAW`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [['URL','Title','Keyword','Theme','QFO Query','Intent','Generated At']] })
+    });
+  }
+}
+async function pushToSheets(sid, tab, row, themed) {
+  await ensureHeader(sid, tab);
+  const now = new Date().toISOString();
+  const values = [];
+  for (const t of themed) {
+    const label = (THEME_META[t.theme]||{label:t.theme}).label;
+    for (const q of t.queries) values.push([row.url, row.title, row.kw, label, q.query, q.intent, now]);
+  }
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sid}/values/${encodeURIComponent(tab+'!A:G')}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+  const res = await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${accessToken}`, 'Content-Type':'application/json' }, body: JSON.stringify({values}) });
+  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Sheets ${res.status}`); }
+}
+
+// ── CSV export ─────────────────────────────────────────────────
+function exportCSV() {
+  const out = [['URL','Title','Keyword','Theme','QFO Query','Intent']];
+  for (const { row, themed } of allResults)
+    for (const t of themed) {
+      const label = (THEME_META[t.theme]||{label:t.theme}).label;
+      for (const q of t.queries) out.push([row.url, row.title, row.kw, label, q.query, q.intent]);
+    }
+  const csv = out.map(r => r.map(c => `"${(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'qfo-screenbinge.csv'; a.click();
+}
+
+// ── Google Auth ────────────────────────────────────────────────
+function loadGIS() {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  document.head.appendChild(s);
+}
+function handleAuth() {
+  let cid = localStorage.getItem('gis_cid') || '';
+  if (!cid) {
+    cid = prompt('Enter your Google OAuth Client ID\n(console.cloud.google.com → APIs & Credentials → OAuth 2.0 Client ID)');
+    if (!cid) return;
+    localStorage.setItem('gis_cid', cid);
+  }
+  if (!window.google?.accounts) { loadGIS(); setTimeout(() => doAuth(cid), 1500); return; }
+  doAuth(cid);
+}
+function doAuth(cid) {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: cid,
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    callback: r => {
+      if (r.error) { setAuth('err', 'Auth failed: ' + r.error); return; }
+      accessToken = r.access_token;
+      setAuth('ok', 'Connected to Google Sheets ✓');
+      log('Google Sheets authorized', 'ok');
+    }
+  });
+  tokenClient.requestAccessToken();
+}
+function setAuth(state, text) {
+  document.getElementById('authDot').className = `dot dot-${state}`;
+  document.getElementById('authText').textContent = text;
+  if (state==='ok') document.getElementById('authBtn').textContent = 'Re-connect';
+}
+function scrollTo(id) { document.querySelector(id)?.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+// ── Init ───────────────────────────────────────────────────────
+addRow('https://screenbinge.ca/best-horror-movies-netflix','Best Horror Movies on Netflix Right Now','best horror movies on netflix');
+loadGIS();
+</script>
+</body>
+</html>
