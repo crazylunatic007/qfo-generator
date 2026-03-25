@@ -486,7 +486,7 @@ Respond ONLY with this exact JSON (8 objects, one per theme):
   { "theme": "CONTEXT",   "queries": [ { "query": "...", "intent": "Navigational" }  ] }
 ]`;
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  const resp = await fetch('https://qfo-proxy.faizprime.workers.dev/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
