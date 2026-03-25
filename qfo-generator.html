@@ -497,13 +497,12 @@ Respond ONLY with this exact JSON (8 objects, one per theme):
     })
   });
 
-  if (!resp.ok) {
-    const err = await resp.json().catch(()=>({}));
-    throw new Error(err.error?.message || `HTTP ${resp.status}`);
-  }
-
-  const data = await resp.json();
-  const raw  = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+  const data = await resp.json().catch(() => null);
+  if (!data) throw new Error(`Worker returned empty response (HTTP ${resp.status})`);
+  if (data.error) throw new Error(`Anthropic error: ${data.error.message || JSON.stringify(data.error)}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${JSON.stringify(data).slice(0,200)}`);
+  if (!data.content) throw new Error(`Bad response: ${JSON.stringify(data).slice(0,200)}`);
+  const raw = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
   return JSON.parse(raw);
 }
 
