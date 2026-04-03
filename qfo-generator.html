@@ -229,6 +229,11 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
   </aside>
 
   <main class="main">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tbtn-gen" onclick="switchTab('gen')">⚡ QFO Generator</button>
+      <button class="tab-btn" id="tbtn-opt" onclick="switchTab('opt')">🎯 Content Optimizer</button>
+    </div>
+    <div id="tab-gen" class="tab-pane active">
     <div class="page-header">
       <div class="page-title">Query Fan-Out Generator</div>
       <div class="page-desc">Generates thematically structured QFO sub-queries for each blog post — organized across 8 semantic facets that mirror how Google's AI Mode decomposes a query internally before retrieving and synthesizing results.</div>
@@ -368,6 +373,52 @@ https://screenbinge.ca/top-sci-fi-shows, Top Sci-Fi Shows to Watch, best sci-fi 
           <span class="os-item">Pending: <span class="os-val" id="osPen">0</span></span>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="optApproveAll()">✓ Approve All</button>
+          <button class="btn-secondary" onclick="exportOptDoc()">⬇ Export Doc</button>
+        </div>
+        <div id="suggestionCards"></div>
+      </div>
+
+      <div class="log-wrap" id="optLogWrap"><div class="log-box" id="optLogBox"></div></div>
+    </div><!-- /tab-opt -->
+
+    </div><!-- /tab-gen -->
+
+    <div id="tab-opt" class="tab-pane">
+      <div class="page-header">
+        <div class="page-title">Content Optimizer</div>
+        <div class="page-desc">Reads your QFO queries directly from Google Sheets, fetches the WordPress post, then maps each query to the best section. Review each suggestion then export a doc.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Step 1 — Select a Post</span>
+          <button class="btn-xs" onclick="loadPostList()">↻ Load from Sheet</button>
+        </div>
+        <div class="card-body">
+          <div class="field-hint" style="margin-bottom:12px">Uses the Sheet ID and Google connection from the Configuration above. Make sure you are connected first.</div>
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <select id="postSelect" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-family:var(--mono);font-size:12px;outline:none;">
+              <option value="">— click Load from Sheet to populate —</option>
+            </select>
+            <button class="btn-primary" id="analyseBtn" onclick="analysePost()"><span>Analyse Post</span></button>
+          </div>
+          <div id="postInfoBar" style="display:none;gap:16px;padding:12px 16px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);margin-top:12px;font-size:12px;flex-wrap:wrap;">
+            <span style="color:var(--text2)">📝 <strong id="pibTitle" style="color:var(--text)">—</strong></span>
+            <span style="color:var(--text2)">🔑 <strong id="pibKw" style="color:var(--text)">—</strong></span>
+            <span style="color:var(--text2)">📊 <strong id="pibQfos" style="color:var(--text)">—</strong> QFOs</span>
+          </div>
+          <div id="headingsList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div id="optReviewSection" style="display:none">
+        <div style="display:flex;gap:20px;padding:14px 16px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;font-size:12px;">
+          <span style="color:var(--text2)">Total: <strong id="osTot" style="font-family:var(--mono);color:var(--amber)">0</strong></span>
+          <span style="color:var(--text2)">Approved: <strong id="osApp" style="font-family:var(--mono);color:var(--green)">0</strong></span>
+          <span style="color:var(--text2)">Rejected: <strong id="osRej" style="font-family:var(--mono);color:var(--red)">0</strong></span>
+          <span style="color:var(--text2)">Pending: <strong id="osPen" style="font-family:var(--mono)">0</strong></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
           <button class="btn-secondary" onclick="optApproveAll()">✓ Approve All</button>
           <button class="btn-secondary" onclick="exportOptDoc()">⬇ Export Doc</button>
         </div>
@@ -744,6 +795,14 @@ function scrollTo(id) { document.querySelector(id)?.scrollIntoView({ behavior:'s
 // ── Init ───────────────────────────────────────────────────────
 addRow('https://screenbinge.ca/best-horror-movies-netflix','Best Horror Movies on Netflix Right Now','best horror movies on netflix');
 loadGIS();
+
+// ── Tab switching ──────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-gen').className = 'tab-pane' + (tab==='gen' ? ' active' : '');
+  document.getElementById('tab-opt').className = 'tab-pane' + (tab==='opt' ? ' active' : '');
+  document.getElementById('tbtn-gen').className = 'tab-btn' + (tab==='gen' ? ' active' : '');
+  document.getElementById('tbtn-opt').className = 'tab-btn' + (tab==='opt' ? ' active' : '');
+}
 </script>
 </body>
 </html>
