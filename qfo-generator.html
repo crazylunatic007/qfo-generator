@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>QFO Generator — screenbinge.ca</title>
+<title>QFO Tool Suite — screenbinge.ca</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -145,6 +145,60 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: sp 0.6s linear infinite; }
 @keyframes sp { to { transform: rotate(360deg); } }
 .empty { text-align: center; padding: 36px 20px; color: var(--text3); font-size: 13px; }
+
+/* ── Tab navigation ─────────────────────────────────────── */
+.tab-nav { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:32px; }
+.tab-btn { padding:12px 24px; font-family:var(--font); font-size:13px; font-weight:600; color:var(--text2); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.15s; margin-bottom:-1px; }
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-pane { display:none; }
+.tab-pane.active { display:block; }
+
+/* ── Optimizer styles ───────────────────────────────────── */
+.opt-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.post-picker { display:flex; gap:12px; align-items:flex-end; }
+.post-picker select { flex:1; background:var(--surface2); border:1px solid var(--border2); color:var(--text); padding:10px 12px; border-radius:8px; font-family:var(--mono); font-size:12px; outline:none; }
+.post-picker select:focus { border-color:var(--accent); }
+.post-info-bar { display:flex; gap:16px; padding:12px 16px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); margin-top:12px; font-size:12px; flex-wrap:wrap; }
+.pib-item { display:flex; gap:6px; align-items:center; color:var(--text2); }
+.pib-val { font-weight:600; color:var(--text); font-family:var(--mono); }
+.post-content-preview { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-size:12px; color:var(--text2); line-height:1.7; max-height:120px; overflow-y:auto; font-family:var(--mono); margin-top:12px; display:none; }
+.post-content-preview.show { display:block; }
+.headings-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.heading-tag { background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.2); color:var(--purple); padding:3px 10px; border-radius:100px; font-size:11px; font-family:var(--mono); }
+.suggestion-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; animation:rise 0.2s ease; }
+@keyframes rise { from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);} }
+.sc-header { padding:14px 16px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
+.sc-query { font-size:14px; font-weight:600; margin-bottom:6px; }
+.sc-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.sc-badge { display:inline-block; padding:2px 9px; border-radius:100px; font-size:10px; font-weight:700; }
+.scb-theme { background:rgba(79,142,255,0.1); color:var(--accent); border:1px solid rgba(79,142,255,0.2); }
+.scb-intent { display:inline-block; padding:2px 9px; border-radius:100px; font-size:10px; font-weight:700; }
+.scb-i-informational { background:rgba(79,142,255,0.12); color:#6aaeff; border:1px solid rgba(79,142,255,0.2); }
+.scb-i-commercial { background:rgba(167,139,250,0.1); color:#a78bfa; border:1px solid rgba(167,139,250,0.2); }
+.scb-i-transactional { background:var(--green-glow); color:var(--green); border:1px solid rgba(62,207,142,0.2); }
+.scb-i-navigational { background:rgba(246,201,14,0.1); color:#f6c90e; border:1px solid rgba(246,201,14,0.2); }
+.scb-new { background:rgba(246,201,14,0.1); color:var(--amber); border:1px solid rgba(246,201,14,0.2); }
+.sc-placement { background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:10px 14px; }
+.sc-pl-label { font-size:10px; font-weight:700; color:var(--text3); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px; }
+.sc-pl-section { color:var(--amber); font-weight:600; font-size:13px; }
+.sc-pl-action { color:var(--text2); font-size:12px; margin-top:4px; line-height:1.6; }
+.sc-snippet { font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:8px; padding:8px 10px; background:rgba(0,0,0,0.25); border-radius:6px; border-left:2px solid var(--accent); line-height:1.7; }
+.sc-actions { display:flex; flex-direction:column; gap:8px; align-items:flex-end; padding-top:2px; }
+.sc-approve { padding:7px 16px; border-radius:7px; font-size:12px; font-weight:600; font-family:var(--font); border:1px solid var(--border2); background:var(--surface3); color:var(--text2); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.sc-approve:hover { border-color:var(--green); color:var(--green); background:var(--green-glow); }
+.sc-approve.on { border-color:var(--green); color:var(--green); background:var(--green-glow); }
+.sc-reject { padding:7px 16px; border-radius:7px; font-size:12px; font-weight:600; font-family:var(--font); border:1px solid var(--border2); background:var(--surface3); color:var(--text2); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.sc-reject:hover { border-color:var(--red); color:var(--red); background:rgba(245,101,101,0.1); }
+.sc-reject.on { border-color:var(--red); color:var(--red); background:rgba(245,101,101,0.1); opacity:0.6; }
+.suggestion-card.approved { border-color:rgba(62,207,142,0.3); }
+.suggestion-card.rejected { opacity:0.45; }
+.opt-summary { display:flex; gap:20px; padding:14px 16px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); margin-bottom:20px; flex-wrap:wrap; }
+.os-item { font-size:12px; color:var(--text2); display:flex; gap:6px; align-items:center; }
+.os-val { font-weight:700; font-family:var(--mono); }
+.os-g { color:var(--green); } .os-r { color:var(--red); } .os-a { color:var(--amber); }
+.opt-empty { text-align:center; padding:60px 20px; color:var(--text3); font-size:13px; }
+
 </style>
 </head>
 <body>
@@ -271,6 +325,58 @@ https://screenbinge.ca/top-sci-fi-shows, Top Sci-Fi Shows to Watch, best sci-fi 
       </div>
       <div id="resultCards"></div>
     </div>
+
+    </div><!-- /tab-gen -->
+
+    <!-- ── OPTIMIZER TAB ─────────────────────────────────── -->
+    <div id="tab-opt" class="tab-pane">
+      <div class="page-header">
+        <div class="page-title">Content Optimizer</div>
+        <div class="page-desc">Reads your QFO queries directly from Google Sheets, fetches the WordPress post, then maps each query to the best section in the content. Review each suggestion and export a doc when done.</div>
+      </div>
+
+      <!-- Step 1: Pick post -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Step 1 — Select a Post</span>
+          <button class="btn-xs" onclick="loadPostList()">↻ Load from Sheet</button>
+        </div>
+        <div class="card-body">
+          <div class="field-hint" style="margin-bottom:12px">Uses the same Sheet ID and Google connection from the Configuration above. Make sure you're connected before loading.</div>
+          <div class="post-picker">
+            <select id="postSelect">
+              <option value="">— click "Load from Sheet" to populate —</option>
+            </select>
+            <button class="btn-primary" id="analyseBtn" onclick="analysePost()"><span>Analyse Post</span></button>
+          </div>
+          <div class="post-info-bar" id="postInfoBar" style="display:none">
+            <span class="pib-item">📝 <span class="pib-val" id="pibTitle">—</span></span>
+            <span class="pib-item">🔑 <span class="pib-val" id="pibKw">—</span></span>
+            <span class="pib-item">📊 <span class="pib-val" id="pibQfos">—</span> QFOs</span>
+          </div>
+          <div id="headingsList" class="headings-list" style="margin-top:10px"></div>
+          <div class="post-content-preview" id="contentPreview"></div>
+        </div>
+      </div>
+
+      <!-- Step 2: Review suggestions -->
+      <div id="optReviewSection" style="display:none">
+        <div class="opt-summary" id="optSummary">
+          <span class="os-item">Total: <span class="os-val os-a" id="osTot">0</span></span>
+          <span class="os-item">Approved: <span class="os-val os-g" id="osApp">0</span></span>
+          <span class="os-item">Rejected: <span class="os-val os-r" id="osRej">0</span></span>
+          <span class="os-item">Pending: <span class="os-val" id="osPen">0</span></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="optApproveAll()">✓ Approve All</button>
+          <button class="btn-secondary" onclick="exportOptDoc()">⬇ Export Doc</button>
+        </div>
+        <div id="suggestionCards"></div>
+      </div>
+
+      <div class="log-wrap" id="optLogWrap"><div class="log-box" id="optLogBox"></div></div>
+    </div><!-- /tab-opt -->
+
   </main>
 </div>
 
